@@ -1,4 +1,5 @@
 import React, { Component } from 'react'
+import ContactService from '../../services/ContactsService'
 
 // eslint-disable-next-line no-useless-escape
 const EMAIL_PATTERN = /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
@@ -37,6 +38,7 @@ class ContactForm extends Component {
       name: validations.name(''),
       email: validations.email('')
     },
+    globalError: '',
     touch: {}
   }
 
@@ -73,42 +75,66 @@ class ContactForm extends Component {
       })
   }
 
+  handleSubmit = (event) => {
+    event.preventDefault();
+    if (!this.hasErrors()) {
+      ContactService.create(this.state.contact)
+        .then(
+          (contact) => {
+            console.log(contact)
+          },
+          (error) => {
+            console.error(error)
+            const { message, errors } = error.response.data;
+            this.setState({
+              errors: {...errors},
+              globalError: !errors && message
+            })
+          }
+        )
+    }
+  }
+
   render() {
-    const { contact, errors, touch } = this.state;
+    const { contact, errors, touch, globalError } = this.state;
     return (
       <div className="row mx-auto">
         <div className="col-xs-12 col-sm-4 mx-auto">
-          
-          <div className="input-group mb-2">
-            <div className="input-group-prepend">
-              <div className="input-group-text"><i className="fa fa-user"></i></div>
+          <form onSubmit={this.handleSubmit}>
+            
+            <div className="input-group mb-2">
+              <div className="input-group-prepend">
+                <div className="input-group-text"><i className="fa fa-user"></i></div>
+              </div>
+              <input type="text" name="name" className={`form-control ${touch.name && errors.name ? 'is-invalid': ''}`} placeholder="Name" 
+                onChange={this.handleChange} onBlur={this.handleBlur} value={contact.name} />
+              <div className="invalid-feedback">{ errors.name }</div>
             </div>
-            <input type="text" name="name" className={`form-control ${touch.name && errors.name ? 'is-invalid': ''}`} placeholder="Name" 
-              onChange={this.handleChange} onBlur={this.handleBlur} value={contact.name} />
-            <div className="invalid-feedback">{ errors.name }</div>
-          </div>
 
-          <div className="input-group mb-2">
-            <div className="input-group-prepend">
-              <div className="input-group-text"><i className="fa fa-envelope"></i></div>
+            <div className="input-group mb-2">
+              <div className="input-group-prepend">
+                <div className="input-group-text"><i className="fa fa-envelope"></i></div>
+              </div>
+              <input type="text" name="email" className={`form-control ${touch.email && errors.email ? 'is-invalid': ''}`} placeholder="Email" 
+                onChange={this.handleChange} onBlur={this.handleBlur} value={contact.email} />
+              <div className="invalid-feedback">{ errors.email }</div>
             </div>
-            <input type="text" name="email" className={`form-control ${touch.email && errors.email ? 'is-invalid': ''}`} placeholder="Email" 
-              onChange={this.handleChange} onBlur={this.handleBlur} value={contact.email} />
-            <div className="invalid-feedback">{ errors.email }</div>
-          </div>
 
-          <div className="input-group mb-2">
-            <div className="input-group-prepend">
-              <div className="input-group-text"><i className="fa fa-phone"></i></div>
+            <div className="input-group mb-2">
+              <div className="input-group-prepend">
+                <div className="input-group-text"><i className="fa fa-phone"></i></div>
+              </div>
+              <input type="text" name="phoneNumber" className={`form-control ${touch.phoneNumber && errors.phoneNumber ? 'is-invalid': ''}`} placeholder="Phone number" 
+                onChange={this.handleChange} onBlur={this.handleBlur} value={contact.phoneNumber} />
+              <div className="invalid-feedback">{ errors.phoneNumber }</div>
             </div>
-            <input type="text" name="phoneNumber" className={`form-control ${touch.phoneNumber && errors.phoneNumber ? 'is-invalid': ''}`} placeholder="Phone number" 
-              onChange={this.handleChange} onBlur={this.handleBlur} value={contact.phoneNumber} />
-            <div className="invalid-feedback">{ errors.phoneNumber }</div>
-          </div>
 
-           <div className="form-actions mt-2">
-             <button className="btn btn-primary btn-block" disabled={this.hasErrors()}>Create contact</button>
-           </div>
+            <div className="form-actions mt-2">
+              <button className="btn btn-primary btn-block" disabled={this.hasErrors()}>Create contact</button>
+            </div>
+          </form>
+
+          { globalError && (<div className="alert alert-danger" role="alert">{ globalError }</div>) }
 
         </div>
       </div>

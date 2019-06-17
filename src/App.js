@@ -4,7 +4,7 @@ import ContactForm from './components/contacts/ContactForm';
 
 function App() {
   return (
-    <div className="container">
+    <div className="container pt-5">
       <ContactForm />
     </div>
   );
